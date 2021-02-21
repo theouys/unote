@@ -1,8 +1,10 @@
 [Desktop Entry]
-Exec=unote
+Exec=unote %u
 Terminal=false
 StartupNotify=true
 Categories=GNOME;Utilities;
 Type=Application
 Icon=/opt/unote/icon.png
-Name=Unote text editor
+Name=Unote
+
+
