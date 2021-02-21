@@ -2,9 +2,10 @@
 This is a very basic and **fast** text editor that runs on MAC OS, Windows and Linux. 
 All it needs to run is, Python3 with tkinter to be installed.
 
-##Pre-requisites
+**Pre-requisites**
+----------------
 
-###Linux (Debian base/Ubuntu)
+Linux (Debian base/Ubuntu)
 --------------------
 sudo apt install python3
 sudo apt install python3-tk
