@@ -1,4 +1,4 @@
-# unote Text Editor
+# Unote Text Editor
 This is a very basic and **fast** text editor that runs on MAC OS, Windows and Linux. 
 All it needs to run is, Python3 with tkinter to be installed.
 
@@ -30,7 +30,7 @@ Go to the official python website and download it
 **Install**
 ------------
 To install this on MACOS and Linux, run the **install.sh** file
-For windows. I still need to figure out how to allow File Explorer to open files with this application. Will have a solution soon.
+Windows do not have a install program yet.It is coming soon. You just have to create a batch file yourself. Also for Windows you can run it, but you cannot use File Explorer yet to open files. You have to open it from the Unote application itself.
 
 
 
