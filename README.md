@@ -5,34 +5,30 @@ All it needs to run is, Python3 with tkinter to be installed.
 **Pre-requisites**
 ----------------
 
-Linux (Debian base/Ubuntu)
---------------------
+**Linux (Debian base/Ubuntu)**
 sudo apt install python3
 sudo apt install python3-tk
 
-###Linux (Arch)
---------------------
+**Linux (Arch)**
 sudo pacman install python3
 sudo pacman install python3-tk
 
-###Redhat/Fedora (Arch)
---------------------
+**Redhat/Fedora (Arch)**
 yum install python3
 yum install python3-tk
 
-###Redhat/Fedora (Arch)
---------------------
+**Redhat/Fedora (Arch)**
 yum install python3
 yum install python3-tk
 
-###MACOS
------
+**MACOS**
 sudo brew install python
 
-###Windows
+**Windows**
 Go to the official python website and download it
 
-##Install
+**Install**
+------------
 To install this on MACOS and Linux, run the **install.sh** file
 For windows. I still need to figure out how to allow File Explorer to open files with this application. Will have a solution soon.
 
