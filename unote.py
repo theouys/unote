@@ -1,4 +1,5 @@
 from tkinter import *
+import sys
 import tkinter.scrolledtext as scrolledtext
 from tkinter import filedialog as fd
 
@@ -51,6 +52,9 @@ root = Tk()
 root.geometry("800x600")
 root.title("UNote - Written by Theo Uys")
 
+ar = len(sys.argv)
+
+
 #Menu
 menubar = Menu(root)
 filemenu = Menu(menubar, tearoff=0)
@@ -72,6 +76,11 @@ root.config(menu=menubar)
 txt = scrolledtext.ScrolledText(root,undo=True)
 txt.pack(expand=True, fill=BOTH)
 
-
+if ar > 1 :
+    filename = sys.argv[1]
+    root.title("UNote - " + sys.argv[1])
+    opentxt  = open(filename,'r').read()
+    txt.insert( INSERT , opentxt)
+    root.title("UNote -" + filename)
 
 root.mainloop()
