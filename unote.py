@@ -3,16 +3,19 @@ import sys
 import tkinter.scrolledtext as scrolledtext
 from tkinter import filedialog as fd
 
-filename = "Untitled"
+filename = "Untitled.txt"
 
 #New Clean text box
 def mnu_New():
     global filename
     txt.delete('1.0', END)
-    filename = "Untitled"
+    filename = "Untitled.txt"
     root.title("UNote -" + filename)
 
 #Open new file
+def mnu_KeyOpen(event):
+    mnu_Open()
+
 def mnu_Open():
     global filename
     txt.delete('1.0', END)
@@ -27,6 +30,9 @@ def mnu_Open():
     opentxt  = open(filename,'r').read()
     txt.insert( INSERT , opentxt)
     root.title("UNote -" + filename)
+
+def mnu_KeySave(event):
+    mnu_Save()
 
 def mnu_Save():
     global filename
@@ -46,7 +52,7 @@ def mnu_SaveAs():
 def mnu_Close():
     global filename
     txt.delete('1.0', END)
-    filename = "Untitled"
+    filename = "Untitled.txt"
     root.title("UNote -" + filename)
 
 def donothing():
@@ -66,14 +72,14 @@ ar = len(sys.argv)
 menubar = Menu(root)
 filemenu = Menu(menubar, tearoff=0)
 filemenu.add_command(label=" New  ", command=mnu_New)
-filemenu.add_command(label=" Open  ", command=mnu_Open)
-filemenu.add_command(label=" Save  ", command=mnu_Save)
+filemenu.add_command(label=" Open <Ctrl+o> ", command=mnu_Open)
+filemenu.add_command(label=" Save <Ctrl+s>", command=mnu_Save)
 filemenu.add_command(label=" Save As  ", command=mnu_SaveAs)
 filemenu.add_command(label=" Close  ", command=mnu_Close)
 
 filemenu.add_separator()
 
-filemenu.add_command(label="Exit", command=root.quit)
+filemenu.add_command(label="Exit <Ctrl+x>", command=root.quit)
 menubar.add_cascade(label="File", menu=filemenu)
 
 
@@ -89,5 +95,11 @@ if ar > 1 :
     opentxt  = open(filename,'r').read()
     txt.insert( INSERT , opentxt)
     root.title("UNote -" + filename)
+
+root.bind('<Control-x>', quit) 
+root.bind('<Control-o>', mnu_KeyOpen) 
+root.bind('<Control-s>', mnu_KeySave) 
+
+
 
 root.mainloop()
