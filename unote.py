@@ -16,7 +16,14 @@ def mnu_New():
 def mnu_Open():
     global filename
     txt.delete('1.0', END)
-    filename = fd.askopenfilename()
+    filename = fd.askopenfilename(title="Select a file", filetypes=[("All Files","*.*"),
+                                                                    ("*.txt","*.txt"),
+                                                                    ("*.sql","*.sql"),
+                                                                    ("*.csv","*.csv"),
+                                                                    ("*.java","*.java"),
+                                                                    ("*.sh","*.sh"),
+                                                                    ("*.py","*.py")
+                                                                    ])
     opentxt  = open(filename,'r').read()
     txt.insert( INSERT , opentxt)
     root.title("UNote -" + filename)
