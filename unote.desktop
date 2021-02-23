@@ -6,5 +6,6 @@ Categories=GNOME;Utilities;
 Type=Application
 Icon=/opt/unote/icon.png
 Name=Unote
+StartupWMClass=UNote
 
 

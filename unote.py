@@ -61,7 +61,7 @@ def donothing():
     button.pack()
 
 #Main Window
-root = Tk()
+root = Tk(className='UNote')
 root.geometry("800x600")
 root.title("UNote - Written by Theo Uys")
 
@@ -99,7 +99,5 @@ if ar > 1 :
 root.bind('<Control-x>', quit) 
 root.bind('<Control-o>', mnu_KeyOpen) 
 root.bind('<Control-s>', mnu_KeySave) 
-
-
 
 root.mainloop()
