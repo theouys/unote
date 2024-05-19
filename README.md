@@ -29,7 +29,7 @@ Go to the official python website and download it
 
 **Install**
 ------------
-To install this on MACOS and Linux, run the **install.sh** file
+To install this on MACOS and Linux, run the **install.sh** file. The My Command menu option needs a file in your home diretory called mycommand.conf. This allow you to run any other program (example: gnome-terminal as default. But you can change it. Make sure you only have one command in the file.)
 Windows do not have a install program yet.It is coming soon. You just have to create a batch file yourself. Also for Windows you can run it, but you cannot use File Explorer yet to open files. You have to open it from the Unote application itself.
 
 

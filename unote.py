@@ -90,7 +90,7 @@ filemenu.add_command(label=" New  ", command=mnu_New)
 filemenu.add_command(label=" Open <Ctrl+o> ", command=mnu_Open)
 filemenu.add_command(label=" Save <Ctrl+s>", command=mnu_Save)
 filemenu.add_command(label=" Save As  ", command=mnu_SaveAs)
-filemenu.add_command(label=" Refresh  ", command=mnu_Refresh)
+filemenu.add_command(label=" Refresh <Ctrl+r> ", command=mnu_Refresh)
 filemenu.add_command(label=" Close  ", command=mnu_Close)
 filemenu.add_command(label=" My Command  ", command=mnu_term)
 
@@ -116,5 +116,6 @@ if ar > 1 :
 root.bind('<Control-x>', quit) 
 root.bind('<Control-o>', mnu_KeyOpen) 
 root.bind('<Control-s>', mnu_KeySave) 
+root.bind('<Control-r>', mnu_Refresh) 
 
 root.mainloop()
