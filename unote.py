@@ -58,9 +58,8 @@ def mnu_Close():
 
 def mnu_term():
     global filename
-    scmd  = open("./term.conf",'r').read()
-    root.title("UNote - Close the terminal to gain control")
-    subprocess.call([scmd, ""])
+    scmd  = open("./mycommand.conf",'r').read()
+    subprocess.call([scmd.strip(), ""])
     root.title("UNote -" + filename)
 
     
@@ -93,7 +92,7 @@ filemenu.add_command(label=" Save <Ctrl+s>", command=mnu_Save)
 filemenu.add_command(label=" Save As  ", command=mnu_SaveAs)
 filemenu.add_command(label=" Refresh  ", command=mnu_Refresh)
 filemenu.add_command(label=" Close  ", command=mnu_Close)
-filemenu.add_command(label=" Terminal  ", command=mnu_term)
+filemenu.add_command(label=" My Command  ", command=mnu_term)
 
 filemenu.add_separator()
 
