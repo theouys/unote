@@ -1,5 +1,6 @@
 from tkinter import *
 import sys
+import subprocess
 import tkinter.scrolledtext as scrolledtext
 from tkinter import filedialog as fd
 
@@ -55,6 +56,21 @@ def mnu_Close():
     filename = "Untitled.txt"
     root.title("UNote -" + filename)
 
+def mnu_term():
+    global filename
+    scmd  = open("./term.conf",'r').read()
+    root.title("UNote - Close the terminal to gain control")
+    subprocess.call([scmd, ""])
+    root.title("UNote -" + filename)
+
+    
+def mnu_Refresh():
+    global filename
+    txt.delete('1.0', END)
+    opentxt  = open(filename,'r').read()
+    txt.insert( INSERT , opentxt)
+    root.title("UNote -" + filename)
+
 def donothing():
     filewin = Toplevel(root)
     button = Button(filewin, text="Do nothing")
@@ -75,7 +91,9 @@ filemenu.add_command(label=" New  ", command=mnu_New)
 filemenu.add_command(label=" Open <Ctrl+o> ", command=mnu_Open)
 filemenu.add_command(label=" Save <Ctrl+s>", command=mnu_Save)
 filemenu.add_command(label=" Save As  ", command=mnu_SaveAs)
+filemenu.add_command(label=" Refresh  ", command=mnu_Refresh)
 filemenu.add_command(label=" Close  ", command=mnu_Close)
+filemenu.add_command(label=" Terminal  ", command=mnu_term)
 
 filemenu.add_separator()
 
