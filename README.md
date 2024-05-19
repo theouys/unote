@@ -19,7 +19,7 @@ yum install python3-tk
 
 **Redhat/Fedora (Arch)**
 yum install python3
-yum install python3-tk
+yum install python3-tkinter
 
 **MACOS**
 sudo brew install python
@@ -31,6 +31,7 @@ Go to the official python website and download it
 ------------
 To install this on MACOS and Linux, run the **install.sh** file
 Windows do not have a install program yet.It is coming soon. You just have to create a batch file yourself. Also for Windows you can run it, but you cannot use File Explorer yet to open files. You have to open it from the Unote application itself.
+
 
 
 
