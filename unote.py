@@ -2,6 +2,7 @@ from tkinter import *
 import sys
 import subprocess
 import tkinter.scrolledtext as scrolledtext
+from tkinter import simpledialog
 from tkinter import filedialog as fd
 
 filename = "Untitled.txt"
@@ -56,11 +57,11 @@ def mnu_Close():
     filename = "Untitled.txt"
     root.title("UNote -" + filename)
 
-def mnu_term():
-    global filename
-    scmd  = open("./mycommand.conf",'r').read()
-    subprocess.call([scmd.strip(), ""])
-    root.title("UNote -" + filename)
+#def mnu_term():
+#    global filename
+#    scmd  = open("./mycommand.conf",'r').read()
+#    subprocess.call([scmd.strip(), ""])
+#    root.title("UNote -" + filename)
 
     
 def mnu_Refresh():
@@ -69,6 +70,12 @@ def mnu_Refresh():
     opentxt  = open(filename,'r').read()
     txt.insert( INSERT , opentxt)
     root.title("UNote -" + filename)
+
+def mnu_RunCmd():
+    global filename
+    scmd = simpledialog.askstring("Run", "Enter command to run:")
+    if scmd is not None:
+       subprocess.call([scmd.strip(), filename])
 
 def donothing():
     filewin = Toplevel(root)
@@ -90,13 +97,14 @@ filemenu.add_command(label=" New  ", command=mnu_New)
 filemenu.add_command(label=" Open <Ctrl+o> ", command=mnu_Open)
 filemenu.add_command(label=" Save <Ctrl+s>", command=mnu_Save)
 filemenu.add_command(label=" Save As  ", command=mnu_SaveAs)
-filemenu.add_command(label=" Refresh <Ctrl+r> ", command=mnu_Refresh)
+filemenu.add_command(label=" Refresh  ", command=mnu_Refresh)
 filemenu.add_command(label=" Close  ", command=mnu_Close)
-filemenu.add_command(label=" My Command  ", command=mnu_term)
+#filemenu.add_command(label=" My Command  ", command=mnu_term)
 
 filemenu.add_separator()
 
-filemenu.add_command(label="Exit <Ctrl+x>", command=root.quit)
+filemenu.add_command(label=" Run Command ", command=mnu_RunCmd)
+filemenu.add_command(label=" Exit <Ctrl+x>", command=root.quit)
 menubar.add_cascade(label="File", menu=filemenu)
 
 
@@ -116,6 +124,6 @@ if ar > 1 :
 root.bind('<Control-x>', quit) 
 root.bind('<Control-o>', mnu_KeyOpen) 
 root.bind('<Control-s>', mnu_KeySave) 
-root.bind('<Control-r>', mnu_Refresh) 
+
 
 root.mainloop()
