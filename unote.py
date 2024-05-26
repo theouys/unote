@@ -68,6 +68,8 @@ def mnu_Close():
     root.title("UNote -" + filename)
 
 def mnu_View():
+    global filename
+    mnu_Save()
     #os.system("google-chrome ./markdown.html")
     webbrowser.open("markdown.html") 
     root.title("UNote -" + filename)    
@@ -95,8 +97,8 @@ def donothing():
 root = Tk(className='UNote')
 root.geometry("800x600")
 root.title("UNote - Written by Theo Uys")
-img = PhotoImage(file='icon.png')
-root.iconphoto(False,img)
+#img = PhotoImage(file='icon.png')
+#root.iconphoto(False,img)
 #app = WebBrowserApp(root)
 
 ar = len(sys.argv)
