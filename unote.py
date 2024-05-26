@@ -6,6 +6,7 @@ import subprocess
 import tkinter.scrolledtext as scrolledtext
 from tkinter import simpledialog
 from tkinter import filedialog as fd
+import webbrowser
 
 filename = "Untitled.txt"
 
@@ -67,7 +68,8 @@ def mnu_Close():
     root.title("UNote -" + filename)
 
 def mnu_View():
-    os.system("start ./markdown.html")
+    #os.system("google-chrome ./markdown.html")
+    webbrowser.open("markdown.html") 
     root.title("UNote -" + filename)    
     
 def mnu_Refresh():
@@ -78,11 +80,11 @@ def mnu_Refresh():
     root.title("UNote -" + filename)
    
 
-def mnu_RunCmd():
-    global filename
-    scmd = simpledialog.askstring("Run", "Enter command to run:")
-    if scmd is not None:
-       subprocess.call([scmd.strip(), filename])
+#def mnu_RunCmd():
+#    global filename
+#    scmd = simpledialog.askstring("Run", "Enter command to run:")
+#    if scmd is not None:
+#       subprocess.call([scmd.strip(), filename])
 
 def donothing():
     filewin = Toplevel(root)
@@ -93,8 +95,9 @@ def donothing():
 root = Tk(className='UNote')
 root.geometry("800x600")
 root.title("UNote - Written by Theo Uys")
-img = PhotoImage(file='.\icon.png')
+img = PhotoImage(file='icon.png')
 root.iconphoto(False,img)
+#app = WebBrowserApp(root)
 
 ar = len(sys.argv)
 
@@ -112,7 +115,7 @@ filemenu.add_command(label=" View  ", command=mnu_View)
 
 filemenu.add_separator()
 
-filemenu.add_command(label=" Run Command ", command=mnu_RunCmd)
+#filemenu.add_command(label=" Run Command ", command=mnu_RunCmd)
 filemenu.add_command(label=" Exit <Ctrl+x>", command=root.quit)
 menubar.add_cascade(label="File", menu=filemenu)
 
