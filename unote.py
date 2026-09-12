@@ -1,4 +1,7 @@
 import sys
+import subprocess
+import shlex
+import shutil
 import tkinter as tk
 from tkinter import ttk, filedialog, messagebox
 import os
@@ -90,7 +93,11 @@ class UNoteApp:
         self.tabs = []
         self.current_tab = None
 
+        self._cvar = tk.IntVar()
+        self._find_search_job = None
+
         self._build_menu()
+        self._build_find_bar()
         self._build_notebook()
 
         if files:
@@ -111,6 +118,9 @@ class UNoteApp:
         file_menu.add_command(label="New Tab", accelerator="Ctrl+N", command=self.new_tab)
         file_menu.add_command(label="Open File...", accelerator="Ctrl+O", command=self.open_file)
         file_menu.add_separator()
+        file_menu.add_command(label="Open in VS Code", command=self.open_in_vscode)
+        file_menu.add_command(label="Open Terminal in Folder", command=self.open_terminal)
+        file_menu.add_separator()
         file_menu.add_command(label="Save", accelerator="Ctrl+S", command=self.save_file)
         file_menu.add_command(label="Save As...", accelerator="Ctrl+Shift+S", command=self.save_file_as)
         file_menu.add_separator()
@@ -127,6 +137,10 @@ class UNoteApp:
         edit_menu.add_command(label="Copy", accelerator="Ctrl+C", command=lambda: self._event("copy"))
         edit_menu.add_command(label="Paste", accelerator="Ctrl+V", command=lambda: self._event("paste"))
         edit_menu.add_command(label="Select All", accelerator="Ctrl+A", command=lambda: self._event("select_all"))
+        edit_menu.add_separator()
+        edit_menu.add_command(label="Find...", accelerator="Ctrl+F", command=self.show_find)
+        edit_menu.add_command(label="Find Next", accelerator="Ctrl+G", command=self.find_next)
+        edit_menu.add_command(label="Find Previous", accelerator="Ctrl+Shift+G", command=self.find_prev)
         menubar.add_cascade(label="Edit", menu=edit_menu)
         self.edit_menu = edit_menu
 
@@ -143,9 +157,48 @@ class UNoteApp:
         )
 
     def _build_notebook(self):
+        self.root.grid_rowconfigure(1, weight=1)
+        self.root.grid_columnconfigure(0, weight=1)
         self.notebook = ttk.Notebook(self.root)
-        self.notebook.pack(fill="both", expand=True)
+        self.notebook.grid(row=1, column=0, sticky="nsew")
         self.notebook.bind("<Button-3>", self._tab_context_menu)
+        self.notebook.bind("<<NotebookTabChanged>>", self._on_tab_changed)
+
+    def _build_find_bar(self):
+        bar = ttk.Frame(self.root, padding=(6, 3))
+        self._find_bar = bar
+        bar.grid(row=0, column=0, sticky="ew")
+        bar.grid_remove()
+        ttk.Label(bar, text="Find:").pack(side="left", padx=(4, 4))
+        self._find_var = tk.StringVar()
+        entry = ttk.Entry(bar, width=32, textvariable=self._find_var)
+        entry.pack(side="left", ipady=1)
+        self._find_entry = entry
+        ttk.Button(bar, text="Prev", width=5,
+                   command=self.find_prev).pack(side="left", padx=(6, 2))
+        ttk.Button(bar, text="Next", width=5,
+                   command=self.find_next).pack(side="left", padx=2)
+        self._find_case = tk.BooleanVar(value=False)
+        ttk.Checkbutton(bar, text="Match case", variable=self._find_case,
+                        command=self._reapply_search).pack(side="left", padx=(10, 0))
+        self._find_count = ttk.Label(bar, text="")
+        self._find_count.pack(side="left", padx=(12, 0))
+        ttk.Button(bar, text="Close",
+                   command=self.hide_find).pack(side="right", padx=(10, 4))
+
+        self._find_var.trace_add("write", self._on_find_typed)
+        entry.bind("<Return>", lambda e: self.find_next())
+        entry.bind("<Shift-Return>", lambda e: self.find_prev())
+        entry.bind("<Down>", lambda e: self.find_next())
+        entry.bind("<Up>", lambda e: self.find_prev())
+        entry.bind("<Escape>", lambda e: self.hide_find())
+
+        self.root.bind("<Control-f>", lambda e: self.show_find())
+        self.root.bind("<Control-F>", lambda e: self.show_find())
+        self.root.bind("<Control-g>", lambda e: self.find_next())
+        self.root.bind("<Control-G>", lambda e: self.find_next())
+        self.root.bind("<Control-Shift-g>", lambda e: self.find_prev())
+        self.root.bind("<Control-Shift-G>", lambda e: self.find_prev())
 
     def _current(self):
         if not self.tabs:
@@ -164,6 +217,71 @@ class UNoteApp:
         self.current_tab = tab
         tab.text.focus_set()
         return tab
+
+    def open_in_vscode(self):
+        tab = self._current()
+        if tab is None:
+            return
+        if not tab.path or not os.path.exists(tab.path):
+            messagebox.showinfo(
+                "Open in VS Code",
+                "This tab has no file on disk yet.\nSave it first, then try again.",
+            )
+            return
+        if tab.modified:
+            answer = messagebox.askyesnocancel(
+                "UNote",
+                f'"{tab.title}" has unsaved changes.\nSave before opening in VS Code?',
+            )
+            if answer is None:
+                return
+            if answer and not self.save_file():
+                return
+        subprocess.Popen(["code", tab.path])
+
+    def _find_terminal(self):
+        terminals = {
+            "ptyxis": None,
+            "xfce4-terminal": ["--working-directory"],
+            "gnome-terminal": None,
+            "konsole": ["--workdir"],
+            "kitty": ["--directory"],
+            "alacritty": ["--working-directory"],
+            "tilix": ["--working-directory"],
+            "xterm": [],
+        }
+        for name, opt in terminals.items():
+            if shutil.which(name):
+                return name, opt
+        return None, None
+
+    def open_terminal(self):
+        tab = self._current()
+        if tab is None:
+            return
+        if not tab.path or not os.path.exists(tab.path):
+            messagebox.showinfo(
+                "Open Terminal",
+                "This tab has no file on disk yet.\nSave it first, then try again.",
+            )
+            return
+        folder = os.path.dirname(tab.path)
+        name, opt = self._find_terminal()
+        if not name:
+            messagebox.showerror("Open Terminal", "No supported terminal emulator found.")
+            return
+        if opt is None:
+            # Terminals such as ptyxis / gnome-terminal that take a trailing
+            # command (modern gnome-terminal dropped --working-directory).
+            subprocess.Popen(
+                [name, "--", "bash", "-c",
+                 f'cd {shlex.quote(folder)} && exec bash'])
+        elif opt:
+            subprocess.Popen([name] + opt + [folder])
+        else:
+            subprocess.Popen(
+                [name, "-e", "bash", "-c",
+                 f'cd {shlex.quote(folder)} && exec bash'])
 
     def open_file(self):
         path = filedialog.askopenfilename(title="Open file")
@@ -299,6 +417,167 @@ class UNoteApp:
             menu.tk_popup(event.x_root, event.y_root)
         finally:
             menu.grab_release()
+
+    # --- Find / search ------------------------------------------------
+
+    def _find_params(self):
+        needle = self._find_var.get()
+        if not needle:
+            return None
+        return needle, not self._find_case.get()
+
+    def show_find(self):
+        self._find_bar.grid()
+        self._find_entry.focus_set()
+        self._find_entry.selection_range(0, "end")
+
+    def hide_find(self):
+        self._find_bar.grid_remove()
+        self._find_count.config(text="")
+        tab = self._current()
+        if tab:
+            tab.text.tag_remove("unote_find", "1.0", "end")
+            tab.text.tag_remove("unote_find_sel", "1.0", "end")
+            tab.text.focus_set()
+
+    def _apply_find_tags(self, tab):
+        text = tab.text
+        text.tag_remove("unote_find", "1.0", "end")
+        text.tag_remove("unote_find_sel", "1.0", "end")
+        params = self._find_params()
+        if params is None:
+            self._find_count.config(text="")
+            return 0
+        needle, ci = params
+        text.tag_configure("unote_find", background="#fff08a", foreground="black")
+        text.tag_configure("unote_find_sel", background="#8fd0ff", foreground="black")
+        count = 0
+        pos = "1.0"
+        while True:
+            idx = text.search(needle, pos, stopindex="end", nocase=ci,
+                              count=self._cvar)
+            if not idx:
+                break
+            end = text.index(f"{idx}+{int(self._cvar.get())}c")
+            text.tag_add("unote_find", idx, end)
+            count += 1
+            pos = end
+        self._find_count.config(
+            text=f"{count} match{'es' if count != 1 else ''}")
+        return count
+
+    def _show_match(self, tab, start, end):
+        text = tab.text
+        text.tag_remove("unote_find_sel", "1.0", "end")
+        text.tag_add("unote_find_sel", start, end)
+        text.tag_raise("unote_find_sel")
+        text.mark_set("insert", start)
+        text.see(start)
+
+    def _select_first_match(self, tab, needle, ci):
+        text = tab.text
+        start = text.index("insert")
+        idx = text.search(needle, start, stopindex="end", nocase=ci,
+                          count=self._cvar)
+        if not idx:
+            idx = text.search(needle, "1.0", stopindex="end", nocase=ci,
+                              count=self._cvar)
+        if idx:
+            end = text.index(f"{idx}+{int(self._cvar.get())}c")
+            self._show_match(tab, idx, end)
+
+    def _on_find_typed(self, *_args):
+        if self._find_search_job:
+            self.root.after_cancel(self._find_search_job)
+        self._find_search_job = self.root.after(150, self._reapply_find_and_select)
+
+    def _reapply_find_and_select(self):
+        self._find_search_job = None
+        tab = self._current()
+        if not tab:
+            return
+        params = self._find_params()
+        if params is None:
+            self._apply_find_tags(tab)
+            return
+        needle, ci = params
+        if self._apply_find_tags(tab):
+            self._select_first_match(tab, needle, ci)
+
+    def _reapply_search(self):
+        tab = self._current()
+        if tab:
+            self._apply_find_tags(tab)
+
+    def find_next(self):
+        if not self._find_bar.winfo_manager():
+            self.show_find()
+            return
+        tab = self._current()
+        if not tab:
+            return
+        params = self._find_params()
+        if params is None:
+            return
+        needle, ci = params
+        text = tab.text
+        start = text.index("insert")
+        rng = text.tag_ranges("unote_find_sel")
+        if len(rng) == 2:
+            sel_start, sel_end = str(rng[0]), str(rng[1])
+            if (text.compare("insert", ">=", sel_start)
+                    and text.compare("insert", "<", sel_end)):
+                start = sel_end
+        idx = text.search(needle, start, stopindex="end", nocase=ci,
+                          count=self._cvar)
+        if not idx:
+            idx = text.search(needle, "1.0", stopindex=start, nocase=ci,
+                              count=self._cvar)
+        if idx:
+            end = text.index(f"{idx}+{int(self._cvar.get())}c")
+            self._show_match(tab, idx, end)
+            self._find_entry.focus_set()
+
+    def find_prev(self):
+        if not self._find_bar.winfo_manager():
+            self.show_find()
+            return
+        tab = self._current()
+        if not tab:
+            return
+        params = self._find_params()
+        if params is None:
+            return
+        needle, ci = params
+        text = tab.text
+        result = None
+        pos = "1.0"
+        while True:
+            idx = text.search(needle, pos, stopindex="insert", nocase=ci,
+                              count=self._cvar)
+            if not idx:
+                break
+            result = idx
+            pos = text.index(f"{idx}+{int(self._cvar.get())}c")
+        if result is None:
+            pos = "1.0"
+            while True:
+                idx = text.search(needle, pos, stopindex="end", nocase=ci,
+                                  count=self._cvar)
+                if not idx:
+                    break
+                result = idx
+                pos = text.index(f"{idx}+{int(self._cvar.get())}c")
+        if result:
+            end = text.index(f"{result}+{int(self._cvar.get())}c")
+            self._show_match(tab, result, end)
+            self._find_entry.focus_set()
+
+    def _on_tab_changed(self, event=None):
+        if self._find_bar.winfo_manager():
+            tab = self._current()
+            if tab:
+                self._apply_find_tags(tab)
 
 
 def main():
