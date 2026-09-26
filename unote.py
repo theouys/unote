@@ -8,7 +8,8 @@ import os
 
 
 class TextTab:
-    def __init__(self, title, path=None):
+    def __init__(self, title, app=None, path=None):
+        self.app = app
         self.path = path
         self.modified = False
 
@@ -32,30 +33,29 @@ class TextTab:
         self.frame.rowconfigure(0, weight=1)
         self.frame.columnconfigure(0, weight=1)
 
-        for key, action in [
-            ("<Control-s>", "save"),
-            ("<Control-o>", "open"),
-            ("<Control-n>", "new"),
-        ]:
-            self.text.bind(key, action)
-
         self.text.bind("<<Modified>>", self._on_modified)
         self.title = title
-        self._set_window_title()
+        self._refresh()
 
     def _on_modified(self, event):
         if self.text.edit_modified():
             self.modified = True
-            self._set_window_title()
+            self._refresh()
         self.text.edit_modified(False)
 
-    def _set_window_title(self):
+    def display_name(self):
         marker = "*" if self.modified else ""
-        self.frame.master.title(f"{marker}{self.title} - UNote")
+        return f"{marker}{self.title}"
+
+    def _refresh(self):
+        if self.app is not None:
+            self.app.refresh_tab(self)
+        else:
+            self.frame.master.title(f"{self.display_name()} - UNote")
 
     def set_title(self, title):
         self.title = title
-        self._set_window_title()
+        self._refresh()
 
     def get_content(self):
         return self.text.get("1.0", "end-1c")
@@ -66,7 +66,7 @@ class TextTab:
         self.text.edit_modified(False)
         self.text.edit_reset()
         self.modified = False
-        self._set_window_title()
+        self._refresh()
 
     def load_file(self, path):
         with open(path, "r", encoding="utf-8", errors="replace") as f:
@@ -124,7 +124,7 @@ class UNoteApp:
         file_menu.add_command(label="Save", accelerator="Ctrl+S", command=self.save_file)
         file_menu.add_command(label="Save As...", accelerator="Ctrl+Shift+S", command=self.save_file_as)
         file_menu.add_separator()
-        file_menu.add_command(label="Close Tab", command=self.close_tab)
+        file_menu.add_command(label="Close Tab", accelerator="Ctrl+W", command=self.close_tab)
         file_menu.add_command(label="Exit", command=self._on_close)
         menubar.add_cascade(label="File", menu=file_menu)
 
@@ -148,6 +148,46 @@ class UNoteApp:
                             activebackground="#505050", activeforeground="white")
         help_menu.add_command(label="About", command=self.show_about)
         menubar.add_cascade(label="Help", menu=help_menu)
+
+        self._build_shortcuts()
+
+    def _build_shortcuts(self):
+        for key, action in [
+            ("<Control-n>", "new_tab"),
+            ("<Control-o>", "open_file"),
+            ("<Control-s>", "save_file"),
+            ("<Control-Shift-s>", "save_file_as"),
+            ("<Control-Shift-S>", "save_file_as"),
+            ("<Control-w>", "close_tab"),
+            ("<Control-W>", "close_tab"),
+        ]:
+            self.root.bind(key, self._shortcut(action))
+        self.root.bind("<Control-a>", self._shortcut("select_all"))
+        self.root.bind("<Control-A>", self._shortcut("select_all"))
+
+    def _shortcut(self, action):
+        def handler(_event=None):
+            if action == "select_all":
+                self._event("select_all")
+            else:
+                getattr(self, action)()
+            return "break"
+
+        return handler
+
+    def refresh_tab(self, tab):
+        """Re-render a tab's label (with unsaved marker) and the window title."""
+        if tab in self.tabs:
+            index = self.tabs.index(tab)
+            self.notebook.tab(index, text=tab.display_name())
+        self.refresh_title()
+
+    def refresh_title(self):
+        tab = self._current()
+        if tab is None:
+            self.root.title("UNote")
+        else:
+            self.root.title(f"{tab.display_name()} - UNote")
 
     def show_about(self):
         messagebox.showinfo(
@@ -209,13 +249,14 @@ class UNoteApp:
         return self.tabs[index]
 
     def new_tab(self):
-        tab = TextTab("Untitled")
+        tab = TextTab("Untitled", app=self)
         tab.frame.master = self.root
         self.tabs.append(tab)
-        self.notebook.add(tab.frame, text="Untitled")
+        self.notebook.add(tab.frame, text=tab.display_name())
         self.notebook.select(tab.frame)
         self.current_tab = tab
         tab.text.focus_set()
+        self.refresh_title()
         return tab
 
     def open_in_vscode(self):
@@ -307,12 +348,11 @@ class UNoteApp:
                 self._write(tab.path, tab.get_content())
                 tab.modified = False
                 tab.text.edit_modified(False)
-                tab._set_window_title()
+                self.refresh_tab(tab)
             except Exception as e:
                 messagebox.showerror("Save File", f"Cannot save file:\n{e}")
         else:
-            self.save_file_as()
-            return True
+            return self.save_file_as()
         return True
 
     def save_file_as(self):
@@ -344,8 +384,7 @@ class UNoteApp:
             f.write(content)
 
     def _update_tab_text(self, tab):
-        index = self.tabs.index(tab)
-        self.notebook.tab(index, text=tab.title)
+        self.refresh_tab(tab)
 
     def close_tab(self, tab=None):
         tab = tab or self._current()
@@ -368,6 +407,7 @@ class UNoteApp:
         self.current_tab = self._current()
         if self.tabs:
             self.current_tab.text.focus_set()
+        self.refresh_title()
 
     def undo(self):
         tab = self._current()
@@ -574,6 +614,7 @@ class UNoteApp:
             self._find_entry.focus_set()
 
     def _on_tab_changed(self, event=None):
+        self.refresh_title()
         if self._find_bar.winfo_manager():
             tab = self._current()
             if tab:
