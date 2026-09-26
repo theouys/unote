@@ -1,0 +1,15 @@
+[Desktop Entry]
+Type=Application
+Version=1.0
+Name=UNote
+GenericName=Text Editor
+Comment=Lightweight tab-based text editor
+Exec=python3 /home/theo/Documents/develop/new-unote/unote/unote.py %F
+TryExec=/usr/bin/python3
+Icon=/home/theo/Documents/develop/new-unote/unote/icon.png
+Terminal=false
+StartupNotify=true
+StartupWMClass=unote
+Categories=Utility;TextEditor;
+MimeType=text/plain;text/x-python;text/x-shellscript;application/json;application/xml;text/x-c;text/x-c++;text/markdown;
+Keywords=editor;text;notepad;notes;write;
