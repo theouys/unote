@@ -29,6 +29,7 @@ describe what you opened, what you expected, and what happened instead.
 
 ## Contents
 
+- [Screenshots](#screenshots)
 - [Features](#features)
 - [Requirements](#requirements)
 - [Installation](#installation)
@@ -44,6 +45,14 @@ describe what you opened, what you expected, and what happened instead.
 - [Troubleshooting](#troubleshooting)
 - [Project layout](#project-layout)
 - [License](#license)
+
+---
+
+## Screenshots
+
+UNote's main window — the tab strip, the editing pane and the status bar:
+
+![UNote's main window](UNote.png)
 
 ---
 
