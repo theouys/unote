@@ -1,6 +1,6 @@
 # UNote
 
-A small, fast, single-file text editor for anything that is made of text.
+A small, fast, multi-tab text editor for anything that is made of text.
 
 UNote is one Python file with a tkinter window around it. It opens plain text,
 Markdown, CSV, source code, config files and logs — anything you can read in a
@@ -10,6 +10,11 @@ find and replace, printing, and a dark theme.
 
 There is no framework, no build step, no server and no third-party dependency
 on Linux or macOS. You run it, you edit, you close it.
+
+To be clear about two different things that could both be called "one file":
+the **application** is a single script (`unote.py`), while the **editor** is
+multi-document — you can open any number of files at once, each in its own
+tab, alongside untitled scratch tabs.
 
 Written by: Theo Uys
 
@@ -503,7 +508,7 @@ New). If none is present, install `fonts-dejavu` or similar.
 ## Project layout
 
 ```
-unote.py     The entire application. Single file, ~3,200 lines.
+unote.py     The entire application, in one script (~3,200 lines).
 icon.png     256×256 window icon, used for the window and desktop launchers.
 icon.svg     The same icon, scalable, for packaging.
 README.md    This file.
@@ -516,7 +521,7 @@ build step because it is a script, and no test suite yet.
 
 ## Contributing
 
-Pull requests are welcome. UNote is deliberately a single file with no
+Pull requests are welcome. UNote is deliberately one script with no
 dependencies beyond the standard library — please keep it that way, and match the
 existing style: comments explain *why* a decision was made (especially where the
 obvious approach fails on a particular platform), not what the next line does.
